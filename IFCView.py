@@ -5,6 +5,31 @@ import streamlit as st
 import ifcopenshell
 import matplotlib.pyplot as plt
 import os
+# ... [rest of your code] ...
+
+def visualize_ifc_bounding_boxes(ifc_file):
+    fig, ax = plt.subplots()
+    products_found = 0
+    boxes_plotted = 0
+
+    for ifc_entity in ifc_file.by_type('IfcProduct'):
+        products_found += 1
+        if ifc_entity.Representation:
+            for representation in ifc_entity.Representation.Representations:
+                # Check for a broader range of representation types, not just 'BoundingBox'
+                if representation.RepresentationType in ['BoundingBox', 'YourOtherTypeHere']:
+                    for item in representation.Items:
+                        # Assuming that the first three values are the coordinates of the corner
+                        # and the next three values are the dimensions
+                        if hasattr(item, 'Coordinates'):  # Check if 'Coordinates' attribute exists
+                            x_min, y_min, z_min = item.Coordinates
+                            if hasattr(item, 'XDim') and hasattr(item, 'YDim'):
+                                x_max = x_min + item.XDim
+                                y_max = y_min + item.YDim
+                                ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
+                                boxes_plotted += 1
+
+    # ... [rest of your visualization function] ...
 
 # Function to visualize bounding boxes
 def visualize_ifc_bounding_boxes(ifc_file):

@@ -5,8 +5,8 @@ import streamlit as st
 import ifcopenshell
 import matplotlib.pyplot as plt
 import os
-# ... [rest of your code] ...
 
+# Function to visualize bounding boxes
 def visualize_ifc_bounding_boxes(ifc_file):
     fig, ax = plt.subplots()
     products_found = 0
@@ -28,27 +28,6 @@ def visualize_ifc_bounding_boxes(ifc_file):
                                 y_max = y_min + item.YDim
                                 ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
                                 boxes_plotted += 1
-
-    # ... [rest of your visualization function] ...
-
-# Function to visualize bounding boxes
-def visualize_ifc_bounding_boxes(ifc_file):
-    fig, ax = plt.subplots()
-    products_found = 0
-    boxes_plotted = 0
-
-    for ifc_entity in ifc_file.by_type('IfcProduct'):
-        products_found += 1
-        if ifc_entity.Representation:
-            for representation in ifc_entity.Representation.Representations:
-                if representation.RepresentationType == 'BoundingBox':
-                    box = representation.Items[0]
-                    x_min, y_min, z_min = box.Corner.Coordinates
-                    x_max = x_min + box.XDim
-                    y_max = y_min + box.YDim
-                    # Simplified 2D representation: plot each bounding box as a rectangle
-                    ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
-                    boxes_plotted += 1
 
     # Debugging outputs
     st.write(f"Number of IfcProduct entities found: {products_found}")

@@ -1,27 +1,44 @@
+# You need to install the necessary libraries first
+# pip install streamlit ifcopenshell matplotlib
+
 import streamlit as st
 import ifcopenshell
-import pyvista as pv
+import matplotlib.pyplot as plt
+import os
 
-# Define a function to load and convert an IFC file to a PyVista mesh
-def load_ifc_file(file_path):
-    ifc_file = ifcopenshell.open(file_path)
-    mesh = ifc_file.geometry.mesh()
-    vertices = mesh.points
-    faces = mesh.indices
-    return pv.PolyData(vertices, faces)
+# Function to visualize bounding boxes
+def visualize_ifc_bounding_boxes(ifc_file):
+    fig, ax = plt.subplots()
+    for ifc_entity in ifc_file.by_type('IfcProduct'):
+        if ifc_entity.Representation:
+            for representation in ifc_entity.Representation.Representations:
+                if representation.RepresentationType == 'BoundingBox':
+                    box = representation.Items[0]
+                    x_min, y_min, z_min = box.Corner.Coordinates
+                    x_max = x_min + box.XDim
+                    y_max = y_min + box.YDim
+                    # Simplified 2D representation: plot each bounding box as a rectangle
+                    ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
+    ax.set_aspect('equal', 'box')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('IFC Model Bounding Boxes Visualization')
+    plt.grid(True)
+    return fig
 
-# Define the Streamlit app
-def main():
-    st.title("IFC File Viewer")
-    file_path = st.file_uploader("Upload an IFC file", type="ifc")
-    if file_path is not None:
-        st.write("Loading IFC file...")
-        mesh = load_ifc_file(file_path.name)
-        st.write("Displaying IFC file...")
-        pv.set_plot_theme("document")
-        plotter = pv.Plotter()
-        plotter.add_mesh(mesh, color="white")
-        plotter.show()
+# Streamlit app interface
+st.title('IFC File Viewer')
+
+uploaded_file = st.file_uploader("Choose an IFC file", type=['ifc'])
+
+if uploaded_file is not None:
+    with open(uploaded_file.name, "wb") as f:
+        f.write(uploaded_file.getbuffer())
         
-if __name__ == "__main__":
-    main()
+    ifc_file = ifcopenshell.open(uploaded_file.name)
+    st.write("File successfully uploaded and read. Visualizing bounding boxes:")
+    
+    fig = visualize_ifc_bounding_boxes(ifc_file)
+    st.pyplot(fig)
+    
+    os.remove(uploaded_file.name)  # Clean up the uploaded file

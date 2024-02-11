@@ -14,20 +14,22 @@ def visualize_ifc_bounding_boxes(ifc_file):
 
     for ifc_entity in ifc_file.by_type('IfcProduct'):
         products_found += 1
+        st.write(f"Found IfcProduct: {ifc_entity}")  # Print out the IfcProduct for debugging
         if ifc_entity.Representation:
             for representation in ifc_entity.Representation.Representations:
-                # Check for a broader range of representation types, not just 'BoundingBox'
-                if representation.RepresentationType in ['BoundingBox', 'YourOtherTypeHere']:
+                st.write(f"Found Representation: {representation}")  # Print out the Representation for debugging
+                if representation.RepresentationType == 'BoundingBox':
                     for item in representation.Items:
-                        # Assuming that the first three values are the coordinates of the corner
-                        # and the next three values are the dimensions
-                        if hasattr(item, 'Coordinates'):  # Check if 'Coordinates' attribute exists
-                            x_min, y_min, z_min = item.Coordinates
-                            if hasattr(item, 'XDim') and hasattr(item, 'YDim'):
-                                x_max = x_min + item.XDim
-                                y_max = y_min + item.YDim
-                                ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
-                                boxes_plotted += 1
+                        if hasattr(item, 'Corner') and hasattr(item, 'XDim') and hasattr(item, 'YDim'):
+                            x_min, y_min, z_min = item.Corner.Coordinates
+                            x_max = x_min + item.XDim
+                            y_max = y_min + item.YDim
+                            ax.add_patch(plt.Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, fill=None, edgecolor='r'))
+                            boxes_plotted += 1
+                        else:
+                            st.write("Representation item does not have the expected attributes.")
+                        # Additional debugging to print the item's attributes
+                        st.write(f"Item attributes: {dir(item)}")
 
     # Debugging outputs
     st.write(f"Number of IfcProduct entities found: {products_found}")

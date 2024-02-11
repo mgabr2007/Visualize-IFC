@@ -17,21 +17,17 @@ def count_building_components(ifc_file):
     
     return component_count
 
-# Function to visualize the count of building components
-def visualize_component_count(component_count):
-    # Sort the dictionary by values (component count)
-    sorted_components = sorted(component_count.items(), key=lambda item: item[1], reverse=True)
-
-    # Unpack the items and prepare data for plotting
-    labels, values = zip(*sorted_components)
-
+# Function to visualize the count of building components as a pie chart
+def visualize_component_count_pie_chart(component_count):
+    # Prepare data for plotting
+    labels = list(component_count.keys())
+    sizes = list(component_count.values())
+    
+    # Make sure the pie chart fits well into the figure area
     fig, ax = plt.subplots()
-    ax.bar(labels, values)
-    ax.set_xlabel('Component Types')
-    ax.set_ylabel('Count')
-    ax.set_title('Count of Different Building Components')
-    plt.xticks(rotation=90)  # Rotate labels to prevent overlap
-    plt.tight_layout()  # Adjust layout to prevent clipping of tick-labels
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.tight_layout()  # Adjust layout to prevent clipping of labels
 
     return fig
 
@@ -53,9 +49,15 @@ if uploaded_file is not None:
     component_count = count_building_components(ifc_file)
     st.write(component_count)  # Show the count of components in the Streamlit app
 
-    # Visualize component count
-    fig = visualize_component_count(component_count)
-    st.pyplot(fig)
+    # Visualize component count as a bar chart
+    st.write("Bar Chart of Building Components:")
+    fig_bar = visualize_component_count(component_count)
+    st.pyplot(fig_bar)
+
+    # Visualize component count as a pie chart
+    st.write("Pie Chart of Building Components:")
+    fig_pie = visualize_component_count_pie_chart(component_count)
+    st.pyplot(fig_pie)
     
     # Clean up the uploaded file
     try:
